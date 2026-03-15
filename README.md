@@ -1,1 +1,1 @@
-# safedose-proxy
+# dosenova-proxy
