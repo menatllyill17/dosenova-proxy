@@ -283,13 +283,15 @@ app.post('/api/validate-code', (req, res) => {
   const { code } = req.body;
   if (!code) return res.json({ valid: false });
 
-  const validCodes = (process.env.REVIEW_CODES || '')
+  // Reads from REVIEW_CODES (comma-separated) or falls back to PRO_UNLOCK_CODE (single code)
+  const codesStr = process.env.REVIEW_CODES || process.env.PRO_UNLOCK_CODE || '';
+  const validCodes = codesStr
     .split(',')
     .map(c => c.trim().toUpperCase())
     .filter(Boolean);
 
   if (validCodes.length === 0) {
-    console.warn('⚠️  REVIEW_CODES env var not set — no codes active');
+    console.warn('⚠️  No review codes configured (set REVIEW_CODES or PRO_UNLOCK_CODE)');
     return res.json({ valid: false });
   }
 
@@ -304,9 +306,10 @@ app.post('/api/validate-code', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Dosenova proxy running on port ${PORT}`);
-  console.log(`   Anthropic API: ${process.env.ANTHROPIC_API_KEY ? '✅ configured' : '❌ missing'}`);
-  console.log(`   OpenAI API:    ${process.env.OPENAI_API_KEY ? '✅ configured' : '❌ missing'}`);
-  console.log(`   Stripe:        ${process.env.STRIPE_SECRET_KEY ? '✅ configured' : '❌ missing'}`);
-  console.log(`   Webhook:       ${process.env.STRIPE_WEBHOOK_SECRET ? '✅ configured' : '⚠️  not set (webhook disabled)'}`);
-  console.log(`   Review codes:  ${process.env.REVIEW_CODES ? '✅ configured' : '⚠️  not set'}`);
+  console.log(`   Anthropic API:    ${process.env.ANTHROPIC_API_KEY ? '✅' : '❌ missing'}`);
+  console.log(`   OpenAI API:       ${process.env.OPENAI_API_KEY ? '✅' : '❌ missing'}`);
+  console.log(`   Stripe:           ${process.env.STRIPE_SECRET_KEY ? '✅' : '❌ missing'}`);
+  console.log(`   Stripe Webhook:   ${process.env.STRIPE_WEBHOOK_SECRET ? '✅' : '⚠️  not set'}`);
+  console.log(`   Review codes:     ${(process.env.REVIEW_CODES || process.env.PRO_UNLOCK_CODE) ? '✅' : '⚠️  not set'}`);
+  console.log(`   Supabase:         ${process.env.SUPABASE_URL ? '✅' : '⚠️  not set'}`);
 });
